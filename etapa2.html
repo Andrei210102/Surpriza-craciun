@@ -176,6 +176,11 @@
       text-align: center;
     }
 
+    .final-box.fail {
+      border: 1px solid var(--danger);
+      background: rgba(248, 113, 113, 0.08);
+    }
+
     .continue-btn {
       margin-top: 10px;
       width: 100%;
@@ -192,6 +197,12 @@
     .continue-btn:hover {
       background: var(--accent);
       color: #020617;
+    }
+
+    .continue-btn.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -216,62 +227,38 @@
     </div>
 
     <div class="final-box" id="finalBox">
-      Testul din etapa 2 este complet.<br />
-      Accesul către etapa următoare a fost deblocat.
-      <button class="continue-btn" id="continueBtn">
-        Mergi la etapa 3
-      </button>
+      <div id="finalMessage"></div>
+      <button class="continue-btn" id="continueBtn">Mergi la etapa 3</button>
     </div>
   </div>
 
   <script>
-    // 🔧 AICI modifici întrebările, răspunsurile și varianta corectă
-    // Pune întrebări la care știi că Ruxandra are avantaj.
+    // întrebările
     const questions = [
       {
-        text: "ÎNTREBARE 1 – schimbă textul cu ce vrei tu.",
-        options: [
-          "Răspuns A",
-          "Răspuns B (corect)",
-          "Răspuns C",
-          "Răspuns D"
-        ],
-        correctIndex: 1
+        text: "Care este numarul lui Avogadro",
+        options: ["3.14", "6.022*10^23", "9.81", "29.9*10^7"],
+        correctIndex: 2,
       },
       {
-        text: "ÎNTREBARE 2 – exemplu.",
-        options: [
-          "Variantă 1 (corect)",
-          "Variantă 2",
-          "Variantă 3",
-          "Variantă 4"
-        ],
-        correctIndex: 0
+        text: "Ce personalitate s a nascut in 1989",
+        options: ["Mihai viteazul", "Nelson Mandela", "Nicolae Ceausescu", "Tay Tay"],
+        correctIndex: 4,
       },
       {
-        text: "ÎNTREBARE 3 – exemplu.",
-        options: [
-          "AAA",
-          "BBB",
-          "CCC (corect)",
-          "DDD"
-        ],
-        correctIndex: 2
+        text: "Ce companie produce chitara lui Andrei Alba",
+        options: ["Fender", "Stratocaster", "Les Paul", "Gibson"],
+        correctIndex: 1,
       },
       {
-        text: "ÎNTREBARE 4 – exemplu.",
-        options: [
-          "Opțiune 1",
-          "Opțiune 2",
-          "Opțiune 3",
-          "Opțiune 4 (corect)"
-        ],
-        correctIndex: 3
-      }
+        text: "In ce oras se afla Danube Tower?",
+        options: ["Bucuresti", "Copenhaga", "Madrid", "Viena"],
+        correctIndex: 4,
+      },
     ];
 
-    // când faci etapa 3, schimbă URL-ul de mai jos:
-    const NEXT_STAGE_URL = "runda3.html"; // placeholder deocamdată
+    const PASS_SCORE = 4; // minim de puncte pentru a trece mai departe
+    const NEXT_STAGE_URL = "runda3.html";
 
     const qCounter = document.getElementById("qCounter");
     const scoreLabel = document.getElementById("scoreLabel");
@@ -281,6 +268,7 @@
     const nextBtn = document.getElementById("nextBtn");
     const finalBox = document.getElementById("finalBox");
     const continueBtn = document.getElementById("continueBtn");
+    const finalMessage = document.getElementById("finalMessage");
     const timerLabel = document.getElementById("timerLabel");
     const timerValue = document.getElementById("timerValue");
 
@@ -334,16 +322,6 @@
       resetTimer();
     }
 
-    function lockOptionsAndShowCorrect() {
-      const q = questions[currentIndex];
-      const buttons = optionsContainer.querySelectorAll(".option");
-      buttons.forEach((b, i) => {
-        b.disabled = true;
-        b.style.cursor = "default";
-        if (i === q.correctIndex) b.classList.add("correct");
-      });
-    }
-
     function handleAnswer(button, index) {
       if (answered) return;
       answered = true;
@@ -362,7 +340,7 @@
         messageBox.textContent = "Corect.";
       } else {
         button.classList.add("wrong");
-        messageBox.textContent = "Nu e corect. Continuă.";
+        messageBox.textContent = "Nu e corect.";
       }
 
       scoreLabel.textContent = `Scor: ${score}`;
@@ -372,8 +350,14 @@
     function handleTimeout() {
       if (answered) return;
       answered = true;
-      lockOptionsAndShowCorrect();
-      messageBox.textContent = "Timpul a expirat. Răspunsul corect este evidențiat.";
+      const q = questions[currentIndex];
+      const buttons = optionsContainer.querySelectorAll(".option");
+      buttons.forEach((b, i) => {
+        b.disabled = true;
+        b.style.cursor = "default";
+        if (i === q.correctIndex) b.classList.add("correct");
+      });
+      messageBox.textContent = "Timpul a expirat.";
       nextBtn.disabled = false;
     }
 
@@ -385,14 +369,27 @@
       } else {
         document.querySelector(".question-box").style.display = "none";
         finalBox.style.display = "block";
+
+        if (score >= PASS_SCORE) {
+          finalBox.classList.remove("fail");
+          finalMessage.textContent =
+            "Felicitări! Ai trecut în etapa următoare.";
+          continueBtn.classList.remove("disabled");
+        } else {
+          finalBox.classList.add("fail");
+          finalMessage.textContent =
+            "Din pacate jocul se încheie aici pentru tine. Mult succes data viitoare!";
+          continueBtn.classList.add("disabled");
+        }
       }
     });
 
     continueBtn.addEventListener("click", () => {
-      window.location.href = NEXT_STAGE_URL;
+      if (!continueBtn.classList.contains("disabled")) {
+        window.location.href = NEXT_STAGE_URL;
+      }
     });
 
-    // start
     renderQuestion();
   </script>
 </body>
