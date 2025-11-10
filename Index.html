@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <title>Acces</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #020617;
+      --card-bg: #020617;
+      --border: #1f2937;
+      --accent: #facc15;
+      --accent-text: #eab308;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --danger: #f87171;
+      --transition: 0.25s ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #020617, #000);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 380px;
+      background: var(--card-bg);
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      padding: 22px 20px 24px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      text-align: center;
+    }
+
+    .title {
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      text-align: left;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.3);
+    }
+
+    .btn {
+      margin-top: 12px;
+      width: 100%;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--accent);
+      color: #111827;
+      transition: background var(--transition), transform var(--transition);
+    }
+
+    .btn:hover {
+      background: #fde047;
+      transform: translateY(-1px);
+    }
+
+    .result {
+      display: none;
+      margin-top: 18px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(6px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    .result.ok {
+      border: 1px solid var(--accent);
+      background: rgba(250, 204, 21, 0.08);
+      color: var(--accent-text);
+      text-align: center;
+    }
+
+    .result.no {
+      border: 1px solid rgba(248, 113, 113, 0.7);
+      background: rgba(248, 113, 113, 0.05);
+      color: var(--danger);
+      text-align: left;
+    }
+
+    .small {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .enter-btn {
+      margin-top: 12px;
+      width: 100%;
+      border-radius: 999px;
+      padding: 8px 12px;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent-text);
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: none;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    .enter-btn.show { display: block; }
+
+    .enter-btn:hover {
+      background: var(--accent);
+      color: #111827;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="title">Acces</h1>
+    <p class="subtitle">Introdu prenumele cu care ești cunoscut.</p>
+
+    <label for="name">Prenume</label>
+    <input id="name" type="text" autocomplete="off" />
+
+    <button class="btn" id="checkBtn">Continuă</button>
+
+    <!-- pentru Ruxandra -->
+    <div id="resultOk" class="result ok">
+      <strong>Felicitări!</strong> Ai fost selectat(ă) să treci în etapa următoare! 💛
+      <button id="enterBtn" class="enter-btn">Intră mai departe</button>
+    </div>
+
+    <!-- pentru ceilalți -->
+    <div id="resultNo" class="result no">
+      Din păcate nu ai trecut mai departe.<br />
+      Îți urăm mult noroc data viitoare! 🍀
+      <span class="small">
+        De aici mai departe se ocupă Ruxandra. 🙂
+      </span>
+    </div>
+  </div>
+
+  <script>
+    const SPECIAL_NAME = "Ruxandra"; // numele ei
+    const NEXT_URL = "joc.html";     // pagina în care o să intre doar ea (o facem după)
+
+    const nameInput = document.getElementById("name");
+    const checkBtn = document.getElementById("checkBtn");
+    const resultOk = document.getElementById("resultOk");
+    const resultNo = document.getElementById("resultNo");
+    const enterBtn = document.getElementById("enterBtn");
+
+    function normalizeName(str) {
+      return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, ""); // scoate diacritice
+    }
+
+    function checkName() {
+      const raw = nameInput.value.trim();
+      if (!raw) return nameInput.focus();
+
+      const normalized = normalizeName(raw);
+      const specialNormalized = normalizeName(SPECIAL_NAME);
+
+      resultOk.style.display = "none";
+      resultNo.style.display = "none";
+      enterBtn.classList.remove("show");
+
+      if (normalized === specialNormalized) {
+        // Ruxandra
+        resultOk.style.display = "block";
+        enterBtn.classList.add("show");
+      } else {
+        // toți ceilalți
+        resultNo.style.display = "block";
+      }
+    }
+
+    checkBtn.addEventListener("click", checkName);
+    nameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") checkName();
+    });
+
+    enterBtn.addEventListener("click", () => {
+      // deocamdată, dacă dai click, nu găsește joc.html (îl facem la pasul următor)
+      window.location.href = NEXT_URL;
+    });
+  </script>
+</body>
+</html>
