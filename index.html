@@ -180,52 +180,55 @@
   </div>
 
   <script>
-    const SPECIAL_NAME = "Ruxandra"; // numele ei
-    const NEXT_URL = "joc.html";     // pagina în care o să intre doar ea (o facem după)
+  // numele care merg mai departe în Runda 2
+  const ALLOWED_NAMES = ["Ruxandra", "Ionut"]; 
+  const NEXT_URL = "etapa2.html"; // pagina de duel / quiz
 
-    const nameInput = document.getElementById("name");
-    const checkBtn = document.getElementById("checkBtn");
-    const resultOk = document.getElementById("resultOk");
-    const resultNo = document.getElementById("resultNo");
-    const enterBtn = document.getElementById("enterBtn");
+  const nameInput = document.getElementById("name");
+  const checkBtn = document.getElementById("checkBtn");
+  const resultOk = document.getElementById("resultOk");
+  const resultNo = document.getElementById("resultNo");
+  const enterBtn = document.getElementById("enterBtn");
 
-    function normalizeName(str) {
-      return str
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, ""); // scoate diacritice
+  function normalizeName(str) {
+    return str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, ""); // scoate diacritice
+  }
+
+  function checkName() {
+    const raw = nameInput.value.trim();
+    if (!raw) return nameInput.focus();
+
+    const normalized = normalizeName(raw);
+
+    resultOk.style.display = "none";
+    resultNo.style.display = "none";
+    enterBtn.classList.remove("show");
+
+    const allowedNormalized = ALLOWED_NAMES.map(normalizeName);
+    const isAllowed = allowedNormalized.includes(normalized);
+
+    if (isAllowed) {
+      // Ruxandra sau Ionut
+      resultOk.style.display = "block";
+      enterBtn.classList.add("show");
+    } else {
+      // tot restul
+      resultNo.style.display = "block";
     }
+  }
 
-    function checkName() {
-      const raw = nameInput.value.trim();
-      if (!raw) return nameInput.focus();
+  checkBtn.addEventListener("click", checkName);
+  nameInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") checkName();
+  });
 
-      const normalized = normalizeName(raw);
-      const specialNormalized = normalizeName(SPECIAL_NAME);
+  enterBtn.addEventListener("click", () => {
+    window.location.href = NEXT_URL;
+  });
+</script>
 
-      resultOk.style.display = "none";
-      resultNo.style.display = "none";
-      enterBtn.classList.remove("show");
-
-      if (normalized === specialNormalized) {
-        // Ruxandra
-        resultOk.style.display = "block";
-        enterBtn.classList.add("show");
-      } else {
-        // toți ceilalți
-        resultNo.style.display = "block";
-      }
-    }
-
-    checkBtn.addEventListener("click", checkName);
-    nameInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") checkName();
-    });
-
-    enterBtn.addEventListener("click", () => {
-      // deocamdată, dacă dai click, nu găsește joc.html (îl facem la pasul următor)
-      window.location.href = NEXT_URL;
-    });
-  </script>
 </body>
 </html>
