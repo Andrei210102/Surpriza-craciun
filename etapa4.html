@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <title>Etapa 4 – Datele vacanței</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #020617;
+      --card-bg: #020617;
+      --border: #1f2937;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+      --accent-strong: #0ea5e9;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --danger: #f97373;
+      --success: #22c55e;
+      --transition: 0.25s ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #020617, #000);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 520px;
+      background: var(--card-bg);
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      padding: 22px 20px 24px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+    }
+
+    .title {
+      font-size: 1.3rem;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .equation-card {
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #020617;
+      font-size: 0.9rem;
+    }
+
+    .equation-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.98rem;
+    }
+
+    .equation-row span {
+      white-space: nowrap;
+    }
+
+    .eq-input {
+      width: 70px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      text-align: center;
+      outline: none;
+    }
+
+    .eq-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.3);
+    }
+
+    .eq-label {
+      font-size: 0.9rem;
+      text-transform: lowercase;
+      color: var(--text-main);
+    }
+
+    .eq-btn {
+      margin-top: 8px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: none;
+      background: var(--accent);
+      color: #020617;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+    }
+
+    .eq-btn:hover {
+      background: var(--accent-strong);
+      transform: translateY(-1px);
+    }
+
+    .message {
+      margin-top: 6px;
+      font-size: 0.85rem;
+      min-height: 18px;
+      color: var(--text-muted);
+    }
+
+    .message.ok {
+      color: #bbf7d0;
+    }
+
+    .message.error {
+      color: var(--danger);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .final-box {
+      margin-top: 18px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--accent);
+      background: var(--accent-soft);
+      text-align: center;
+      display: none;
+    }
+
+    .final-btn {
+      margin-top: 8px;
+      width: 100%;
+      border-radius: 999px;
+      padding: 8px 12px;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition), transform var(--transition);
+    }
+
+    .final-btn:hover {
+      background: var(--accent);
+      color: #020617;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="title">Etapa 4 – Datele vacanței</h1>
+    <p class="subtitle">
+      Mai devreme ai reușit să descoperi luna august, acum a venit momentul să afli mai multe detalii.
+    </p>
+
+    <!-- Ecuația pentru 4 august -->
+    <div class="equation-card" id="card1">
+      <div class="equation-title">1. Se dă ecuația:</div>
+      <div class="equation-row">
+        <span>(18 ÷ 3) − 2 =</span>
+        <input
+          id="input1"
+          class="eq-input"
+          type="number"
+          inputmode="numeric"
+          autocomplete="off"
+        />
+        <span class="eq-label">august</span>
+      </div>
+      <button class="eq-btn" id="check1">Verifică</button>
+      <div class="message" id="msg1">Introdu rezultatul și verifică.</div>
+    </div>
+
+    <!-- Ecuația pentru 7 august (ascunsă la început) -->
+    <div class="equation-card hidden" id="card2">
+      <div class="equation-title">2. Încă una:</div>
+      <div class="equation-row">
+        <span>(5 × 3) − 8 =</span>
+        <input
+          id="input2"
+          class="eq-input"
+          type="number"
+          inputmode="numeric"
+          autocomplete="off"
+        />
+        <span class="eq-label">august</span>
+      </div>
+      <button class="eq-btn" id="check2">Verifică</button>
+      <div class="message" id="msg2">Introdu rezultatul și verifică.</div>
+    </div>
+
+    <div class="final-box" id="finalBox">
+      <button class="final-btn" id="spinBtn">Învârte roata</button>
+    </div>
+  </div>
+
+  <script>
+    const FIRST_RESULT = 4;
+    const SECOND_RESULT = 7;
+    const WHEEL_URL = "etapa5.html";
+
+
+    const input1 = document.getElementById("input1");
+    const input2 = document.getElementById("input2");
+    const check1 = document.getElementById("check1");
+    const check2 = document.getElementById("check2");
+    const msg1 = document.getElementById("msg1");
+    const msg2 = document.getElementById("msg2");
+    const card2 = document.getElementById("card2");
+    const finalBox = document.getElementById("finalBox");
+    const spinBtn = document.getElementById("spinBtn");
+
+    function checkFirst() {
+      const value = Number(input1.value);
+      msg1.className = "message";
+
+      if (Number.isNaN(value)) {
+        msg1.textContent = "Scrie un număr înainte să verifici.";
+        msg1.classList.add("error");
+        return;
+      }
+
+      if (value === FIRST_RESULT) {
+        msg1.textContent = "Corect";
+        msg1.classList.add("ok");
+        card2.classList.remove("hidden");
+        input2.focus();
+      } else {
+        msg1.textContent = "Nu e rezultatul corect. Mai încearcă.";
+        msg1.classList.add("error");
+      }
+    }
+
+    function checkSecond() {
+      const value = Number(input2.value);
+      msg2.className = "message";
+
+      if (Number.isNaN(value)) {
+        msg2.textContent = "Scrie un număr înainte să verifici.";
+        msg2.classList.add("error");
+        return;
+      }
+
+      if (value === SECOND_RESULT) {
+        msg2.textContent = "Corect, acum este timpul să înțelegi ce se va întâmpla în această perioadă.";
+        msg2.classList.add("ok");
+        finalBox.style.display = "block";
+      } else {
+        msg2.textContent = "Nu e rezultatul corect. Mai încearcă.";
+        msg2.classList.add("error");
+      }
+    }
+
+    check1.addEventListener("click", checkFirst);
+    check2.addEventListener("click", checkSecond);
+
+    input1.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") checkFirst();
+    });
+
+    input2.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") checkSecond();
+    });
+
+    spinBtn.addEventListener("click", () => {
+      window.location.href = WHEEL_URL;
+    });
+  </script>
+</body>
+</html>
