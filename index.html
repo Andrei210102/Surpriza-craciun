@@ -194,11 +194,16 @@
       .replace(/[\u0300-\u036f]/g, ""); // scoate diacritice
   }
 
-  function checkName() {
+function checkName() {
     const raw = nameInput.value.trim();
     if (!raw) return nameInput.focus();
 
     const normalized = normalizeName(raw);
+
+    // salvează prenumele introdus (ne-normalizat sau poți salva normalizat)
+    // salvăm și forma originală pentru afisare, și varianta normalizată pentru verificări
+    localStorage.setItem('playerNameRaw', raw);
+    localStorage.setItem('playerNameNorm', normalized);
 
     resultOk.style.display = "none";
     resultNo.style.display = "none";
