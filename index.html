@@ -151,6 +151,33 @@
       background: var(--accent);
       color: #111827;
     }
+
+    /* buton pentru afișare intrebare si containerul de intrebare */
+    .reveal-btn {
+      margin-top: 12px;
+      width: 100%;
+      border-radius: 999px;
+      padding: 8px 12px;
+      border: 1px solid #94a3b8;
+      background: transparent;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+    }
+    .reveal-btn:hover { background: rgba(148,163,184,0.06); }
+
+    .question-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #374151;
+      background: rgba(255,255,255,0.02);
+      color: var(--text-main);
+      display: none;
+      text-align: left;
+      font-size: 0.92rem;
+    }
   </style>
 </head>
 <body>
@@ -163,74 +190,141 @@
 
     <button class="btn" id="checkBtn">Continuă</button>
 
-    <!-- pentru Ruxandra -->
-    <div id="resultOk" class="result ok">
+    <!-- pentru Ruxandra / Ionut -->
+    <div id="resultOk" class="result ok" role="status" aria-live="polite">
       <strong>Felicitări!</strong> Ai fost selectat(ă) să treci în etapa următoare! 💛
       <button id="enterBtn" class="enter-btn">Intră mai departe</button>
     </div>
 
     <!-- pentru ceilalți -->
-    <div id="resultNo" class="result no">
+    <div id="resultNo" class="result no" role="status" aria-live="polite">
       Din păcate nu ai trecut mai departe.<br />
       Îți urăm mult noroc data viitoare! 🍀
+
+      <!-- buton care apare doar dacă există întrebare personalizată -->
+      <button id="revealBtn" class="reveal-btn" aria-expanded="false" style="display:none;">
+        Apasă acest buton când vei fi întrebat
+      </button>
+
+      <!-- containerul în care se afișează întrebarea -->
+      <div id="questionBox" class="question-box" aria-hidden="true"></div>
     </div>
   </div>
 
   <script>
-  // numele care merg mai departe în Runda 2
-  const ALLOWED_NAMES = ["Ruxandra", "Ionut"]; 
-  const NEXT_URL = "etapa2.html"; // pagina de duel / quiz
+    // lista completa de participanti
+    const PARTICIPANTS = ["Ruxandra","Andrei","Ionut","Bianca","Amira","Lidia","Liviu"];
 
-  const nameInput = document.getElementById("name");
-  const checkBtn = document.getElementById("checkBtn");
-  const resultOk = document.getElementById("resultOk");
-  const resultNo = document.getElementById("resultNo");
-  const enterBtn = document.getElementById("enterBtn");
+    // numele care sunt lăsați imediat să treacă (etapa1 pass)
+    const ALLOWED_NAMES = ["Ruxandra", "Ionut"]; 
 
-  function normalizeName(str) {
-    return str
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, ""); // scoate diacritice
-  }
+    // mapping nume (normalizat) -> întrebare personalizată
+    const QUESTIONS_MAP = {
+      "bianca": "Care este animăluțul care este utilizat drept mascotă a magazinului?",
+      "amira": "În ce cartier se află maternitatea în care m-am născut?",
+      "ionut": "Ce dezvoltă un material metalic care este supus la un nivel înalt de umiditate pentru o perioadă îndelungată?",
+      "liviu": "Cum se numește instituția la care lucrez?",
+      "lidia": "Care este locul în care merg frecvent în zile de sărbătoare?",
+      "andrei": "Care este locul în care a început una dintre cele mai frumoase povești acum 1908 zile, respectiv 5 ani 2 luni și 21 de zile?"
+    };
 
-function checkName() {
-    const raw = nameInput.value.trim();
-    if (!raw) return nameInput.focus();
+    const NEXT_URL = "Integrama.html"; // pagina următoare reală
 
-    const normalized = normalizeName(raw);
+    const nameInput = document.getElementById("name");
+    const checkBtn = document.getElementById("checkBtn");
+    const resultOk = document.getElementById("resultOk");
+    const resultNo = document.getElementById("resultNo");
+    const enterBtn = document.getElementById("enterBtn");
+    const revealBtn = document.getElementById("revealBtn");
+    const questionBox = document.getElementById("questionBox");
 
-    // salvează prenumele introdus (ne-normalizat sau poți salva normalizat)
-    // salvăm și forma originală pentru afisare, și varianta normalizată pentru verificări
-    localStorage.setItem('playerNameRaw', raw);
-    localStorage.setItem('playerNameNorm', normalized);
-
-    resultOk.style.display = "none";
-    resultNo.style.display = "none";
-    enterBtn.classList.remove("show");
-
-    const allowedNormalized = ALLOWED_NAMES.map(normalizeName);
-    const isAllowed = allowedNormalized.includes(normalized);
-
-    if (isAllowed) {
-      // Ruxandra sau Ionut
-      resultOk.style.display = "block";
-      enterBtn.classList.add("show");
-    } else {
-      // tot restul
-      resultNo.style.display = "block";
+    function normalizeName(str) {
+      return String(str || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // scoate diacritice
+        .replace(/\s+/g, ""); // elimină spații pentru siguranță
     }
-  }
 
-  checkBtn.addEventListener("click", checkName);
-  nameInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") checkName();
-  });
+    function checkName() {
+      const raw = nameInput.value.trim();
+      if (!raw) return nameInput.focus();
 
-  enterBtn.addEventListener("click", () => {
-    window.location.href = NEXT_URL;
-  });
-</script>
+      const normalized = normalizeName(raw);
+
+      // salvăm forma introdusă (raw + normalized) în localStorage
+      localStorage.setItem('playerNameRaw', raw);
+      localStorage.setItem('playerNameNorm', normalized);
+
+      // ascundem toate rezultatele la fiecare verificare
+      resultOk.style.display = "none";
+      resultNo.style.display = "none";
+      enterBtn.classList.remove("show");
+      revealBtn.style.display = "none";
+      questionBox.style.display = "none";
+      questionBox.textContent = "";
+      revealBtn.setAttribute("aria-expanded", "false");
+      questionBox.setAttribute("aria-hidden", "true");
+
+      // verificăm dacă numele face parte din lista completă de participanți
+      const participantNamesNormalized = PARTICIPANTS.map(normalizeName);
+      const isParticipant = participantNamesNormalized.includes(normalized);
+
+      // dacă nu e participant în listă, tratăm ca 'nu trecut'
+      if (!isParticipant) {
+        resultNo.style.display = "block";
+        return;
+      }
+
+      // verificăm dacă este în lista celor care trec din etapa 1
+      const allowedNormalized = ALLOWED_NAMES.map(normalizeName);
+      const isAllowed = allowedNormalized.includes(normalized);
+
+      if (isAllowed) {
+        // Ruxandra sau Ionut — afișăm buton de intrare
+        resultOk.style.display = "block";
+        enterBtn.classList.add("show");
+      } else {
+        // participant valid, dar respins la etapa 1 => afișăm mesajul de respingere
+        resultNo.style.display = "block";
+
+        // dacă avem o întrebare pentru acest nume, afișăm butonul pentru a o dezvălui
+        if (QUESTIONS_MAP.hasOwnProperty(normalized)) {
+          revealBtn.style.display = "block";
+          // păstrăm întrebarea în data-attribute pentru acces facil
+          revealBtn.dataset.q = QUESTIONS_MAP[normalized];
+          // accesibilitate: setează aria-label cu scurtă descriere
+          revealBtn.setAttribute("aria-label", "Afișează întrebarea pentru " + raw);
+        }
+      }
+    }
+
+    // handler pentru butonul de reveal (apare doar pentru cei respinși și care au întrebare)
+    revealBtn.addEventListener("click", () => {
+      const q = revealBtn.dataset.q || "Întrebarea nu este disponibilă.";
+      questionBox.textContent = q;
+      questionBox.style.display = "block";
+      revealBtn.style.display = "none"; // ascundem butonul după afișare
+      revealBtn.setAttribute("aria-expanded", "true");
+      questionBox.setAttribute("aria-hidden", "false");
+    });
+
+    checkBtn.addEventListener("click", checkName);
+    nameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") checkName();
+    });
+
+    enterBtn.addEventListener("click", () => {
+      // în unele cazuri vrem să protejăm și navigarea: verificăm din nou
+      const saved = localStorage.getItem('playerNameNorm') || normalizeName(nameInput.value);
+      const allowedNormalized = ALLOWED_NAMES.map(normalizeName);
+      if (!allowedNormalized.includes(saved)) {
+        alert("Nu ai permisiunea de a intra.");
+        return;
+      }
+      window.location.href = NEXT_URL;
+    });
+  </script>
 
 </body>
 </html>
