@@ -422,23 +422,19 @@
         const saved = savedNorm || normalizeNameForCheck(savedRaw || '');
 
         // Dacă este "ionut" vrem să-l blocăm (nu poate trece). În plus,
-        // dacă a picat (score < PASS_SCORE) îi afișăm întrebarea personalizată.
+        // vrem să îi afișăm întrebarea personalizată indiferent de scor.
         if (saved === 'ionut') {
-          // Forțăm eșec pentru Ionut
+          // Forțăm eșec pentru Ionuț (buton dezactivat)
           finalBox.classList.add("fail");
           continueBtn.classList.add("disabled");
 
-          if (score >= PASS_SCORE) {
-            // (opțional) dacă ai vrea să nu-l blochezi eventual: dar conform regulii, blocăm
-            // aici îl tratăm ca eșec chiar dacă scorul e mare
-            finalMessage.textContent =
-              "Din pacate nu ai fost selectat sa mergi mai departe. Mult succes data viitoare!";
-          } else {
-            finalMessage.textContent =
-              "Din pacate ai fost eliminat din concurs. Mai jos este întrebarea care ți-a fost atribuită.";
-            // afișăm întrebarea personalizată (dacă există)
-            showPersonalQuestion('ionut');
-          }
+          // Mesaj final (nu contează scorul)
+          finalMessage.textContent =
+            "Din pacate nu ai fost selectat sa mergi mai departe. Mai jos este întrebarea care ți-a fost atribuită.";
+
+          // Afișăm întrebarea personalizată oricum (indiferent de score)
+          showPersonalQuestion('ionut');
+
         } else {
           // comportament normal pentru ceilalti: daca au punctajul trec, altfel esueaza
           if (score >= PASS_SCORE) {
@@ -451,7 +447,7 @@
             finalMessage.textContent =
               "Din pacate jocul se încheie aici pentru tine. Mult succes data viitoare!";
             // daca utilizatorul are o intrebare personalizata (ex. a fost participant dar respins),
-            // o putem afișa și aici la eșec:
+            // o afișăm și aici la eșec:
             if (QUESTIONS_MAP.hasOwnProperty(saved)) {
               showPersonalQuestion(saved);
             }
