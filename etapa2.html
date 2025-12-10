@@ -278,6 +278,14 @@
     let timer = 10;
     let timerInterval = null;
 
+    // normalize function similar to index
+    function normalizeNameForCheck(str) {
+      return String(str || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
     function resetTimer() {
       clearInterval(timerInterval);
       timer = 10;
@@ -370,26 +378,52 @@
         document.querySelector(".question-box").style.display = "none";
         finalBox.style.display = "block";
 
-        if (score >= PASS_SCORE) {
-          finalBox.classList.remove("fail");
-          finalMessage.textContent =
-            "Felicitări! Ai trecut în etapa următoare.";
-          continueBtn.classList.remove("disabled");
-        } else {
+        // ==== AICI: verificare nume din localStorage și blocare pentru 'ionut' ====
+        const savedNorm = (localStorage.getItem('playerNameNorm') || '').toString();
+        const savedRaw = (localStorage.getItem('playerNameRaw') || '').toString();
+        const saved = savedNorm || normalizeNameForCheck(savedRaw || '');
+
+        if (saved === 'ionut') {
+          // Forțăm eșec pentru Ionuț, indiferent de scor
           finalBox.classList.add("fail");
           finalMessage.textContent =
-            "Din pacate jocul se încheie aici pentru tine. Mult succes data viitoare!";
+            "Accesul este restricționat pentru acest utilizator. Mult succes data viitoare!";
           continueBtn.classList.add("disabled");
+        } else {
+          // comportament normal
+          if (score >= PASS_SCORE) {
+            finalBox.classList.remove("fail");
+            finalMessage.textContent =
+              "Felicitări! Ai trecut în etapa următoare.";
+            continueBtn.classList.remove("disabled");
+          } else {
+            finalBox.classList.add("fail");
+            finalMessage.textContent =
+              "Din pacate jocul se încheie aici pentru tine. Mult succes data viitoare!";
+            continueBtn.classList.add("disabled");
+          }
         }
+        // ==== sfârșit verificare nume ====
       }
     });
 
     continueBtn.addEventListener("click", () => {
+      // verificare suplimentară la click (prevenim ocolirea prin DOM)
+      const savedNorm = (localStorage.getItem('playerNameNorm') || '').toString();
+      const savedRaw = (localStorage.getItem('playerNameRaw') || '').toString();
+      const saved = savedNorm || normalizeNameForCheck(savedRaw || '');
+
+      if (saved === 'ionut') {
+        alert("Accesul este restricționat pentru acest utilizator.");
+        return;
+      }
+
       if (!continueBtn.classList.contains("disabled")) {
         window.location.href = NEXT_STAGE_URL;
       }
     });
 
+    // init
     renderQuestion();
   </script>
 </body>
