@@ -181,6 +181,17 @@
       background: rgba(248, 113, 113, 0.08);
     }
 
+    .personal-question {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid #374151;
+      text-align: left;
+      color: var(--text-main);
+      font-size: 0.95rem;
+    }
+
     .continue-btn {
       margin-top: 10px;
       width: 100%;
@@ -228,6 +239,9 @@
 
     <div class="final-box" id="finalBox">
       <div id="finalMessage"></div>
+      <!-- locul unde vom adăuga eventual întrebarea personalizată -->
+      <div id="personalQContainer" aria-live="polite"></div>
+
       <button class="continue-btn" id="continueBtn">Mergi la etapa 3</button>
     </div>
   </div>
@@ -260,6 +274,16 @@
     const PASS_SCORE = 4; // minim de puncte pentru a trece mai departe
     const NEXT_STAGE_URL = "etapa3.html";
 
+    // Mapping intre numele normalizate si intrebarile personalizate
+    const QUESTIONS_MAP = {
+      "bianca": "Care este animăluțul care este utilizat drept mascotă a magazinului?",
+      "amira" : "În ce cartier se află maternitatea în care m-am născut?",
+      "ionut" : "Ce dezvoltă un material metalic care este supus la un nivel înalt de umiditate pentru o perioadă îndelungată?",
+      "liviu" : "Cum se numește instituția la care lucrez?",
+      "lidia" : "Care este locul în care merg frecvent în zile de sărbătoare?",
+      "andrei": "Care este locul în care a început una dintre cele mai frumoase povești acum 1908 zile, respectiv 5 ani 2 luni și 21 de zile?"
+    };
+
     const qCounter = document.getElementById("qCounter");
     const scoreLabel = document.getElementById("scoreLabel");
     const questionText = document.getElementById("questionText");
@@ -271,6 +295,7 @@
     const finalMessage = document.getElementById("finalMessage");
     const timerLabel = document.getElementById("timerLabel");
     const timerValue = document.getElementById("timerValue");
+    const personalQContainer = document.getElementById('personalQContainer');
 
     let currentIndex = 0;
     let score = 0;
@@ -283,7 +308,8 @@
       return String(str || "")
         .toLowerCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "");
     }
 
     function resetTimer() {
@@ -369,6 +395,18 @@
       nextBtn.disabled = false;
     }
 
+    // functie care afiseaza intrebarea personalizata in containerul final
+    function showPersonalQuestion(nameNorm) {
+      const qtext = QUESTIONS_MAP[nameNorm];
+      if (!qtext) return;
+      personalQContainer.innerHTML = ''; // curatam inainte
+      const el = document.createElement('div');
+      el.className = 'personal-question';
+      el.id = 'personalQuestion';
+      el.textContent = 'Întrebare personalizată: ' + qtext;
+      personalQContainer.appendChild(el);
+    }
+
     nextBtn.addEventListener("click", () => {
       clearInterval(timerInterval);
       currentIndex++;
@@ -378,19 +416,31 @@
         document.querySelector(".question-box").style.display = "none";
         finalBox.style.display = "block";
 
-        // ==== AICI: verificare nume din localStorage și blocare pentru 'ionut' ====
+        // ==== AICI: verificare nume din localStorage și afișare întrebării personalizate la eșec ====
         const savedNorm = (localStorage.getItem('playerNameNorm') || '').toString();
         const savedRaw = (localStorage.getItem('playerNameRaw') || '').toString();
         const saved = savedNorm || normalizeNameForCheck(savedRaw || '');
 
+        // Dacă este "ionut" vrem să-l blocăm (nu poate trece). În plus,
+        // dacă a picat (score < PASS_SCORE) îi afișăm întrebarea personalizată.
         if (saved === 'ionut') {
-          // Forțăm eșec pentru Ionuț, indiferent de scor
+          // Forțăm eșec pentru Ionut
           finalBox.classList.add("fail");
-          finalMessage.textContent =
-            "Din pacate nu ai fost selectat sa mergi mai departe. Mult succes data viitoare!";
           continueBtn.classList.add("disabled");
+
+          if (score >= PASS_SCORE) {
+            // (opțional) dacă ai vrea să nu-l blochezi eventual: dar conform regulii, blocăm
+            // aici îl tratăm ca eșec chiar dacă scorul e mare
+            finalMessage.textContent =
+              "Din pacate nu ai fost selectat sa mergi mai departe. Mult succes data viitoare!";
+          } else {
+            finalMessage.textContent =
+              "Din pacate ai fost eliminat din concurs. Mai jos este întrebarea care ți-a fost atribuită.";
+            // afișăm întrebarea personalizată (dacă există)
+            showPersonalQuestion('ionut');
+          }
         } else {
-          // comportament normal
+          // comportament normal pentru ceilalti: daca au punctajul trec, altfel esueaza
           if (score >= PASS_SCORE) {
             finalBox.classList.remove("fail");
             finalMessage.textContent =
@@ -400,10 +450,15 @@
             finalBox.classList.add("fail");
             finalMessage.textContent =
               "Din pacate jocul se încheie aici pentru tine. Mult succes data viitoare!";
+            // daca utilizatorul are o intrebare personalizata (ex. a fost participant dar respins),
+            // o putem afișa și aici la eșec:
+            if (QUESTIONS_MAP.hasOwnProperty(saved)) {
+              showPersonalQuestion(saved);
+            }
             continueBtn.classList.add("disabled");
           }
         }
-        // ==== sfârșit verificare nume ====
+        // ==== sfarsit verificare nume ====
       }
     });
 
